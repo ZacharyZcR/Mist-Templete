@@ -23,6 +23,52 @@ const routes = [
                 meta: { title: "仪表盘" }
             },
 
+            // 集控管理路由
+            {
+                path: "control",
+                name: "ControlManagement",
+                meta: { title: "集控管理", permission: "users.access" },
+                children: [
+                    {
+                        path: "list",
+                        name: "ControlList",
+                        component: () => import("../views/control/ControlList.vue"),
+                        meta: { title: "集控列表" }
+                    },
+                    {
+                        path: "create",
+                        name: "CreateNode",
+                        component: () => import("../views/control/NodeForm.vue"),
+                        meta: { title: "创建节点" }
+                    },
+                    {
+                        path: "details/:id",
+                        name: "NodeDetail",
+                        component: () => import("../views/control/NodeDetail.vue"),
+                        meta: { title: "节点详情" }
+                    },
+                    {
+                        path: "edit/:id",
+                        name: "EditNode",
+                        component: () => import("../views/control/NodeForm.vue"),
+                        meta: { title: "编辑节点" }
+                    },
+                    {
+                        path: "overview",
+                        name: "ControlOverview",
+                        component: () => import("../views/control/ControlOverview.vue"),
+                        meta: { title: "集控总览" }
+                    },
+                    {
+                        path: "map",
+                        name: "ControlMap",
+                        component: () => import("../views/control/ControlMap.vue"),
+                        meta: { title: "集控地图" }
+                    }
+                ]
+            },
+
+
             // 用户管理路由
             {
                 path: "users",

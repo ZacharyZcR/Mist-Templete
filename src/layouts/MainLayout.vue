@@ -39,6 +39,62 @@
             <span>仪表盘</span>
           </router-link>
 
+          <!-- 用户管理相关菜单项 -->
+
+          <!-- 集控管理分组 -->
+          <div class="pt-4 pb-2 px-4 text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">集控管理</div>
+
+          <!-- 集控列表 -->
+          <router-link
+              to="/control/list"
+              class="flex items-center px-4 py-2 rounded-md transition-all duration-200 hover:scale-105"
+              :class="$route.path === '/control/list' ?
+    (isDarkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-600') :
+    (isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')"
+          >
+            <Icon icon="mdi:format-list-bulleted" class="mr-3 h-5 w-5" />
+            <span>集控列表</span>
+          </router-link>
+
+          <!-- 创建节点 -->
+          <router-link
+              to="/control/create"
+              class="flex items-center px-4 py-2 rounded-md transition-all duration-200 hover:scale-105"
+              :class="$route.path === '/control/create' ?
+    (isDarkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-600') :
+    (isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')"
+          >
+            <Icon icon="mdi:plus-circle-outline" class="mr-3 h-5 w-5" />
+            <span>创建节点</span>
+          </router-link>
+
+          <!-- 集控总览 -->
+          <router-link
+              to="/control/overview"
+              class="flex items-center px-4 py-2 rounded-md transition-all duration-200 hover:scale-105"
+              :class="$route.path === '/control/overview' ?
+    (isDarkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-600') :
+    (isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')"
+          >
+            <Icon icon="mdi:view-dashboard-outline" class="mr-3 h-5 w-5" />
+            <span>集控总览</span>
+          </router-link>
+
+          <!-- 集控地图 -->
+          <router-link
+              to="/control/map"
+              class="flex items-center px-4 py-2 rounded-md transition-all duration-200 hover:scale-105"
+              :class="$route.path === '/control/map' ?
+    (isDarkMode ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-600') :
+    (isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')"
+          >
+            <Icon icon="mdi:map" class="mr-3 h-5 w-5" />
+            <span>集控地图</span>
+          </router-link>
+
+          <!-- 设置分组 -->
+
+
           <!-- 用户管理分组 -->
           <div class="pt-4 pb-2 px-4 text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">用户管理</div>
 
