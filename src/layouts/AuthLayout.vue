@@ -36,7 +36,7 @@
       <div class="flex justify-between items-center p-6">
         <!-- 移动设备上的品牌标识 -->
         <div class="flex items-center md:hidden">
-          <img src="./assets/Mist.png" class="h-8 w-auto" alt="米斯特" />
+          <img src="../assets/Mist.png" class="h-8 w-auto" alt="米斯特" />
           <span class="ml-2 text-xl font-bold" :class="isDarkMode ? 'text-white' : 'text-gray-800'">米斯特</span>
         </div>
 

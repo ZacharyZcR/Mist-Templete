@@ -68,6 +68,38 @@ const routes = [
                 ]
             },
 
+            // 防火墙路由
+            {
+                path: "firewall",
+                name: "FirewallManagement",
+                meta: { title: "防火墙", permission: "users.access" },
+                children: [
+                    {
+                        path: "rules",
+                        name: "FirewallRules",
+                        component: () => import("../views/firewall/FirewallRules.vue"),
+                        meta: { title: "规则管理" }
+                    },
+                    {
+                        path: "logs",
+                        name: "FirewallLogs",
+                        component: () => import("../views/firewall/FirewallLogs.vue"),
+                        meta: { title: "日志查询" }
+                    },
+                    {
+                        path: "security",
+                        name: "FirewallSecurity",
+                        component: () => import("../views/firewall/SecurityPolicy.vue"),
+                        meta: { title: "安全策略" }
+                    },
+                    {
+                        path: "alerts",
+                        name: "FirewallAlerts",
+                        component: () => import("../views/firewall/SecurityAlerts.vue"),
+                        meta: { title: "安全告警" }
+                    }
+                ]
+            },
 
             // 用户管理路由
             {
