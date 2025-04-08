@@ -101,6 +101,45 @@ const routes = [
                 ]
             },
 
+            // 安全模型对话路由
+            {
+                path: "security-chat",
+                name: "SecurityChatManagement",
+                meta: { title: "安全模型对话", permission: "users.access" },
+                children: [
+                    {
+                        path: "list",
+                        name: "SecurityChatList",
+                        component: () => import("../views/security-chat/ChatList.vue"),
+                        meta: { title: "对话列表" }
+                    },
+                    {
+                        path: "new",
+                        name: "SecurityChatNew",
+                        component: () => import("../views/security-chat/NewChat.vue"),
+                        meta: { title: "新建对话" }
+                    },
+                    {
+                        path: "history",
+                        name: "SecurityChatHistory",
+                        component: () => import("../views/security-chat/ChatHistory.vue"),
+                        meta: { title: "对话历史" }
+                    },
+                    {
+                        path: "models",
+                        name: "SecurityChatModels",
+                        component: () => import("../views/security-chat/ModelManagement.vue"),
+                        meta: { title: "模型管理" }
+                    },
+                    {
+                        path: "detail/:id",
+                        name: "SecurityChatDetail",
+                        component: () => import("../views/security-chat/ChatDetail.vue"),
+                        meta: { title: "对话详情" }
+                    }
+                ]
+            },
+
             // 用户管理路由
             {
                 path: "users",

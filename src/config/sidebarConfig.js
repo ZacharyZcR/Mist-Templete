@@ -70,6 +70,37 @@ export const sidebarConfig = [
         ]
     },
     {
+        id: 'security-chat',
+        title: '安全模型对话',
+        isSection: true,
+        items: [
+            {
+                id: 'security-chat-list',
+                title: '对话列表',
+                icon: 'mdi:chat-outline',
+                path: '/security-chat/list'
+            },
+            {
+                id: 'security-chat-new',
+                title: '新建对话',
+                icon: 'mdi:chat-plus-outline',
+                path: '/security-chat/new'
+            },
+            {
+                id: 'security-chat-history',
+                title: '对话历史',
+                icon: 'mdi:history',
+                path: '/security-chat/history'
+            },
+            {
+                id: 'security-chat-models',
+                title: '模型管理',
+                icon: 'mdi:brain',
+                path: '/security-chat/models'
+            }
+        ]
+    },
+    {
         id: 'users',
         title: '用户管理',
         isSection: true,
