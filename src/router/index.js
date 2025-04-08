@@ -140,6 +140,51 @@ const routes = [
                 ]
             },
 
+            // EDR终端检测路由
+            {
+                path: "edr",
+                name: "EDRManagement",
+                meta: { title: "EDR终端检测", permission: "users.access" },
+                children: [
+                    {
+                        path: "endpoints",
+                        name: "EDREndpoints",
+                        component: () => import("../views/edr/EndpointManagement.vue"),
+                        meta: { title: "终端管理" }
+                    },
+                    {
+                        path: "threats",
+                        name: "EDRThreats",
+                        component: () => import("../views/edr/ThreatDetection.vue"),
+                        meta: { title: "威胁检测" }
+                    },
+                    {
+                        path: "response",
+                        name: "EDRResponse",
+                        component: () => import("../views/edr/ResponseActions.vue"),
+                        meta: { title: "响应操作" }
+                    },
+                    {
+                        path: "reports",
+                        name: "EDRReports",
+                        component: () => import("../views/edr/ReportsAnalysis.vue"),
+                        meta: { title: "报告分析" }
+                    },
+                    {
+                        path: "policies",
+                        name: "EDRPolicies",
+                        component: () => import("../views/edr/PolicyConfiguration.vue"),
+                        meta: { title: "策略配置" }
+                    },
+                    {
+                        path: "details/:id",
+                        name: "EndpointDetail",
+                        component: () => import("../views/edr/EndpointDetail.vue"),
+                        meta: { title: "终端详情" }
+                    }
+                ]
+            },
+
             // 用户管理路由
             {
                 path: "users",

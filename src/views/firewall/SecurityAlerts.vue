@@ -223,7 +223,7 @@
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
               <div class="flex justify-end space-x-2">
                 <button @click="viewAlertDetails(alert)"
-                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                        :class="isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">
                   <Icon icon="mdi:information-outline" class="h-5 w-5" />
                 </button>
                 <button v-if="alert.status === 'unhandled'" @click="setAlertStatus(alert, 'handling')"
@@ -310,10 +310,11 @@
     <!-- 告警详情模态框 -->
     <div v-if="showAlertModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="closeAlertModal">
       <div class="fixed inset-0 bg-black opacity-50"></div>
-      <div class="relative bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 md:mx-auto"
+      <div class="relative p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 md:mx-auto"
            :class="isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'">
-        <button @click="closeAlertModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-          <Icon icon="mdi:close" class="h-6 w-6" />
+        <button @click="closeAlertModal"
+                :class="isDarkMode ? 'absolute top-4 right-4 text-gray-400 hover:text-gray-300' : 'absolute top-4 right-4 text-gray-400 hover:text-gray-600'">
+        <Icon icon="mdi:close" class="h-6 w-6" />
         </button>
 
         <div v-if="selectedAlert" class="space-y-4">

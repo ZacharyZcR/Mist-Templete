@@ -1,5 +1,3 @@
-// src/config/sidebarConfig.js
-
 export const sidebarConfig = [
     {
         id: 'dashboard',
@@ -66,6 +64,43 @@ export const sidebarConfig = [
                 title: '安全告警',
                 icon: 'mdi:alert-circle-outline',
                 path: '/firewall/alerts'
+            }
+        ]
+    },
+    {
+        id: 'edr',
+        title: 'EDR终端检测',
+        isSection: true,
+        items: [
+            {
+                id: 'edr-endpoints',
+                title: '终端管理',
+                icon: 'mdi:desktop-mac-dashboard',
+                path: '/edr/endpoints'
+            },
+            {
+                id: 'edr-threats',
+                title: '威胁检测',
+                icon: 'mdi:shield-alert',
+                path: '/edr/threats'
+            },
+            {
+                id: 'edr-response',
+                title: '响应操作',
+                icon: 'mdi:shield-check',  // 安全响应确认
+                path: '/edr/response'
+            },
+            {
+                id: 'edr-reports',
+                title: '报告分析',
+                icon: 'mdi:file-chart',
+                path: '/edr/reports'
+            },
+            {
+                id: 'edr-policies',
+                title: '策略配置',
+                icon: 'mdi:shield-check',
+                path: '/edr/policies'
             }
         ]
     },

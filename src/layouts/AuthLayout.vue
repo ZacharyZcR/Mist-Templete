@@ -137,14 +137,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, provide } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useStore } from 'vuex'; // 获取 Vuex Store
 import { useRoute } from 'vue-router';
 import { Icon } from '@iconify/vue';
 
+const store = useStore(); // 创建 store 实例
 const route = useRoute();
-const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
 
-provide('isDarkMode', isDarkMode);
+const isDarkMode = computed(() => store.state.isDarkMode);
 
 // 检查是否有子路由组件
 const hasChildRoute = computed(() => {
@@ -167,9 +168,7 @@ const pageTitle = computed(() => {
 
 // 切换暗黑模式
 const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value;
-  localStorage.setItem('darkMode', isDarkMode.value);
-
+  store.dispatch('toggleDarkMode'); // 触发 Vuex 的动作
   if (isDarkMode.value) {
     document.documentElement.classList.add('dark');
   } else {
@@ -179,7 +178,6 @@ const toggleDarkMode = () => {
 
 // 组件挂载时初始化暗黑模式
 onMounted(() => {
-  // 初始化暗黑模式
   if (isDarkMode.value) {
     document.documentElement.classList.add('dark');
   }

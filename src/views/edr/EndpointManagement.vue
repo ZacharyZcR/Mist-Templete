@@ -3,19 +3,27 @@
     <!-- 页面标题和操作栏 -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
       <h1 class="text-2xl font-bold" :class="isDarkMode ? 'text-white' : 'text-gray-800'">
-        防火墙日志查询
+        EDR终端管理
       </h1>
       <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
         <button
-            @click="exportLogs"
+            @click="exportEndpoints"
             class="inline-flex items-center px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200"
             :class="isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
         >
           <Icon icon="mdi:download" class="mr-2 h-5 w-5" />
-          导出日志
+          导出终端列表
         </button>
         <button
-            @click="refreshLogs"
+            @click="scanAllEndpoints"
+            class="inline-flex items-center px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200"
+            :class="isDarkMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-green-600 text-white hover:bg-green-500'"
+        >
+          <Icon icon="mdi:scan" class="mr-2 h-5 w-5" />
+          全网扫描
+        </button>
+        <button
+            @click="refreshEndpoints"
             class="inline-flex items-center px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200"
             :class="isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-600 text-white hover:bg-blue-500'"
         >
@@ -37,7 +45,7 @@
             <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="搜索日志..."
+                placeholder="搜索终端..."
                 class="pl-10 pr-4 py-2 w-full rounded-lg border focus:ring-2 focus:outline-none transition-colors duration-200"
                 :class="isDarkMode
                 ? 'bg-gray-700 border-gray-600 text-gray-200 focus:ring-blue-600 focus:border-blue-600'
@@ -47,29 +55,29 @@
         </div>
         <div class="flex flex-wrap gap-3">
           <select
-              v-model="actionFilter"
+              v-model="statusFilter"
               class="px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-colors duration-200"
               :class="isDarkMode
               ? 'bg-gray-700 border-gray-600 text-gray-200 focus:ring-blue-600 focus:border-blue-600'
               : 'bg-white border-gray-300 text-gray-800 focus:ring-blue-500 focus:border-blue-500'"
           >
-            <option value="all">全部操作</option>
-            <option value="ALLOW">已允许</option>
-            <option value="DENY">已拒绝</option>
-            <option value="DROP">已丢弃</option>
+            <option value="all">全部状态</option>
+            <option value="online">在线</option>
+            <option value="offline">离线</option>
+            <option value="warning">警告</option>
+            <option value="critical">危险</option>
           </select>
           <select
-              v-model="timeFilter"
+              v-model="osFilter"
               class="px-4 py-2 rounded-lg border focus:ring-2 focus:outline-none transition-colors duration-200"
               :class="isDarkMode
               ? 'bg-gray-700 border-gray-600 text-gray-200 focus:ring-blue-600 focus:border-blue-600'
               : 'bg-white border-gray-300 text-gray-800 focus:ring-blue-500 focus:border-blue-500'"
           >
-            <option value="1h">最近1小时</option>
-            <option value="24h">最近24小时</option>
-            <option value="7d">最近7天</option>
-            <option value="30d">最近30天</option>
-            <option value="all">全部时间</option>
+            <option value="all">全部操作系统</option>
+            <option value="Windows">Windows</option>
+            <option value="Linux">Linux</option>
+            <option value="macOS">macOS</option>
           </select>
         </div>
       </div>
@@ -80,8 +88,8 @@
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" :class="isDarkMode ? 'border-blue-400' : 'border-blue-600'"></div>
     </div>
 
-    <!-- 日志列表 -->
-    <div v-else-if="filteredLogs.length > 0" class="rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md mb-6"
+    <!-- 终端列表 -->
+    <div v-else-if="filteredEndpoints.length > 0" class="rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md mb-6"
          :class="isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y" :class="isDarkMode ? 'divide-gray-700' : 'divide-gray-200'">
@@ -89,27 +97,27 @@
           <tr>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-              时间
+              终端名称
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-              操作
+              IP地址
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-              来源 IP
+              操作系统
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-              目标 IP
+              状态
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-              协议/端口
+              最后在线时间
             </th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-              规则
+              代理版本
             </th>
             <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
                 :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
@@ -118,37 +126,50 @@
           </tr>
           </thead>
           <tbody :class="isDarkMode ? 'divide-y divide-gray-700' : 'divide-y divide-gray-200'">
-          <tr v-for="log in filteredLogs" :key="log.id"
+          <tr v-for="endpoint in filteredEndpoints" :key="endpoint.id"
               class="transition-colors duration-150"
               :class="isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'">
             <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-              {{ formatDate(log.timestamp) }}
+              {{ endpoint.name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
+              {{ endpoint.ip }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
+              <div class="flex items-center">
+                <Icon :icon="getOsIcon(endpoint.os)" class="mr-2 h-5 w-5" />
+                {{ endpoint.os }}
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                    class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    :class="logActionClass(log.action)"
-                >
-                  {{ logActionText(log.action) }}
-                </span>
+              <span
+                  class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  :class="statusClass(endpoint.status)"
+              >
+                {{ statusText(endpoint.status) }}
+              </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-              {{ log.sourceIP }}
+              {{ formatDate(endpoint.lastOnline) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-              {{ log.destinationIP }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-              {{ log.protocol }} / {{ log.port }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-              {{ log.ruleName }}
+              {{ endpoint.agentVersion }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
-              <button @click="viewLogDetails(log)"
-                      class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                <Icon icon="mdi:information-outline" class="h-5 w-5" />
-              </button>
+              <div class="flex justify-end items-center space-x-3">
+                <button @click="scanEndpoint(endpoint)"
+                        :class="isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">
+                  <Icon icon="mdi:scan" class="h-5 w-5" />
+                </button>
+                <button @click="isolateEndpoint(endpoint)"
+                        class="text-yellow-600 hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300">
+                  <Icon icon="mdi:server-network-off" class="h-5 w-5" />
+                </button>
+                <button @click="viewEndpointDetails(endpoint)"
+                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                  <Icon icon="mdi:information-outline" class="h-5 w-5" />
+                </button>
+              </div>
             </td>
           </tr>
           </tbody>
@@ -156,7 +177,8 @@
       </div>
 
       <!-- 分页 -->
-      <div class="px-6 py-3 flex items-center justify-between border-t" :class="isDarkMode ? 'border-gray-700' : 'border-gray-200'">
+      <div class="px-6 py-3 flex items-center justify-between border-t"
+           :class="isDarkMode ? 'border-gray-700' : 'border-gray-200'">
         <div class="flex-1 flex justify-between sm:hidden">
           <button @click="prevPage" :disabled="currentPage === 1"
                   class="relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md"
@@ -208,106 +230,120 @@
     <!-- 空状态 -->
     <div v-else class="text-center py-20 rounded-xl shadow-sm"
          :class="isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'">
-      <Icon icon="mdi:file-document-outline" class="h-16 w-16 mx-auto" :class="isDarkMode ? 'text-gray-600' : 'text-gray-400'" />
+      <Icon icon="mdi:laptop" class="h-16 w-16 mx-auto" :class="isDarkMode ? 'text-gray-600' : 'text-gray-400'" />
       <h3 class="mt-4 text-lg font-medium" :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
-        暂无日志记录
+        暂无终端记录
       </h3>
       <p class="mt-2 text-sm" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-        防火墙尚未记录任何匹配当前筛选条件的日志
+        没有找到匹配当前筛选条件的终端设备
       </p>
     </div>
 
-    <!-- 日志详情模态框 -->
-    <div v-if="showLogModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="closeLogModal">
+    <!-- 终端详情模态框 -->
+    <div v-if="showEndpointModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="closeEndpointModal">
       <div class="fixed inset-0 bg-black opacity-50"></div>
       <div class="relative p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 md:mx-auto"
            :class="isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'">
-        <button @click="closeLogModal"
+        <button @click="closeEndpointModal"
                 :class="isDarkMode ? 'absolute top-4 right-4 text-gray-400 hover:text-gray-300' : 'absolute top-4 right-4 text-gray-400 hover:text-gray-600'">
           <Icon icon="mdi:close" class="h-6 w-6" />
         </button>
 
-        <h2 class="text-xl font-bold mb-6">日志详情</h2>
+        <h2 class="text-xl font-bold mb-6">终端详情</h2>
 
-        <div v-if="selectedLog" class="space-y-4">
+        <div v-if="selectedEndpoint" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="space-y-2">
+            <div class="space-y-4">
               <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">时间:</span>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">终端名称:</span>
                 <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ formatDate(selectedLog.timestamp, true) }}
+                  {{ selectedEndpoint.name }}
                 </p>
               </div>
 
               <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">操作:</span>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">IP地址:</span>
+                <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
+                  {{ selectedEndpoint.ip }}
+                </p>
+              </div>
+
+              <div>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">MAC地址:</span>
+                <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
+                  {{ selectedEndpoint.mac }}
+                </p>
+              </div>
+
+              <div>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">操作系统:</span>
+                <p class="text-sm flex items-center" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
+                  <Icon :icon="getOsIcon(selectedEndpoint.os)" class="mr-2 h-5 w-5" />
+                  {{ selectedEndpoint.os }} {{ selectedEndpoint.osVersion }}
+                </p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">状态:</span>
                 <p>
-                  <span
-                      class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                      :class="logActionClass(selectedLog.action)"
-                  >
-                    {{ logActionText(selectedLog.action) }}
+                  <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        :class="statusClass(selectedEndpoint.status)">
+                    {{ statusText(selectedEndpoint.status) }}
                   </span>
                 </p>
               </div>
 
               <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">规则名称:</span>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">最后在线时间:</span>
                 <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ selectedLog.ruleName }}
+                  {{ formatDate(selectedEndpoint.lastOnline, true) }}
                 </p>
               </div>
 
               <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">规则ID:</span>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">代理版本:</span>
                 <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ selectedLog.ruleId }}
-                </p>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">来源:</span>
-                <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ selectedLog.sourceIP }}{{ selectedLog.sourcePort ? ':' + selectedLog.sourcePort : '' }}
+                  {{ selectedEndpoint.agentVersion }}
                 </p>
               </div>
 
               <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">目标:</span>
+                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">终端分组:</span>
                 <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ selectedLog.destinationIP }}:{{ selectedLog.port }}
-                </p>
-              </div>
-
-              <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">协议:</span>
-                <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ selectedLog.protocol }}
-                </p>
-              </div>
-
-              <div>
-                <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">接口:</span>
-                <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-                  {{ selectedLog.interface }}
+                  {{ selectedEndpoint.group }}
                 </p>
               </div>
             </div>
           </div>
 
-          <div v-if="selectedLog.packet">
-            <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">数据包信息:</span>
-            <pre class="mt-1 p-3 text-xs overflow-x-auto rounded"
-                 :class="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'">{{ selectedLog.packet }}</pre>
+          <div>
+            <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">硬件信息:</span>
+            <div class="mt-2 p-3 rounded"
+                 :class="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-y-2 text-sm">
+                <div>CPU: {{ selectedEndpoint.hardware.cpu }}</div>
+                <div>内存: {{ selectedEndpoint.hardware.memory }}</div>
+                <div>磁盘: {{ selectedEndpoint.hardware.disk }}</div>
+                <div>显卡: {{ selectedEndpoint.hardware.gpu }}</div>
+              </div>
+            </div>
           </div>
 
-          <div v-if="selectedLog.message">
-            <span class="text-sm font-medium" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">消息:</span>
-            <p class="text-sm" :class="isDarkMode ? 'text-gray-300' : 'text-gray-900'">
-              {{ selectedLog.message }}
-            </p>
+          <div class="flex flex-wrap gap-3 justify-end">
+            <button @click="scanEndpoint(selectedEndpoint)"
+                    class="inline-flex items-center px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200"
+                    :class="isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-600 text-white hover:bg-blue-500'">
+              <Icon icon="mdi:scan" class="mr-2 h-5 w-5" />
+              执行扫描
+            </button>
+            <button @click="isolateEndpoint(selectedEndpoint)"
+                    class="inline-flex items-center px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-200"
+                    :class="isDarkMode ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-yellow-600 text-white hover:bg-yellow-500'">
+              <Icon icon="mdi:server-network-off" class="mr-2 h-5 w-5" />
+              网络隔离
+            </button>
           </div>
         </div>
       </div>
@@ -327,78 +363,64 @@ const loading = ref(true);
 
 // 过滤条件和搜索
 const searchQuery = ref('');
-const actionFilter = ref('all');
-const timeFilter = ref('24h');
+const statusFilter = ref('all');
+const osFilter = ref('all');
 
 // 分页
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// 日志列表
-const logs = ref([]);
-const selectedLog = ref(null);
-const showLogModal = ref(false);
+// 终端列表
+const endpoints = ref([]);
+const selectedEndpoint = ref(null);
+const showEndpointModal = ref(false);
 
-// 过滤后的日志
-const filteredLogs = computed(() => {
-  let result = logs.value.filter(log => {
-    // 操作类型过滤
-    if (actionFilter.value !== 'all' && log.action !== actionFilter.value) {
+// 过滤后的终端
+const filteredEndpoints = computed(() => {
+  let result = endpoints.value.filter(endpoint => {
+    // 状态过滤
+    if (statusFilter.value !== 'all' && endpoint.status !== statusFilter.value) {
       return false;
     }
 
-    // 时间过滤
-    if (timeFilter.value !== 'all') {
-      const now = new Date();
-      const logDate = new Date(log.timestamp);
-      let timeLimit;
-
-      switch(timeFilter.value) {
-        case '1h':
-          timeLimit = 60 * 60 * 1000; // 1小时
-          break;
-        case '24h':
-          timeLimit = 24 * 60 * 60 * 1000; // 24小时
-          break;
-        case '7d':
-          timeLimit = 7 * 24 * 60 * 60 * 1000; // 7天
-          break;
-        case '30d':
-          timeLimit = 30 * 24 * 60 * 60 * 1000; // 30天
-          break;
-      }
-
-      if ((now - logDate) > timeLimit) {
-        return false;
-      }
+    // 操作系统过滤
+    if (osFilter.value !== 'all' && !endpoint.os.includes(osFilter.value)) {
+      return false;
     }
 
     // 搜索查询
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase();
-      return log.sourceIP.toLowerCase().includes(query) ||
-          log.destinationIP.toLowerCase().includes(query) ||
-          log.ruleName.toLowerCase().includes(query) ||
-          log.protocol.toLowerCase().includes(query);
+      return endpoint.name.toLowerCase().includes(query) ||
+          endpoint.ip.toLowerCase().includes(query) ||
+          endpoint.os.toLowerCase().includes(query);
     }
 
     return true;
   });
 
-  // 按时间降序排序
-  result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  // 按状态和名称排序
+  result.sort((a, b) => {
+    // 首先按状态排序：在线 > 警告 > 离线 > 危险
+    const statusOrder = {
+      'online': 0,
+      'warning': 1,
+      'offline': 2,
+      'critical': 3
+    };
+
+    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+    if (statusDiff !== 0) return statusDiff;
+
+    // 其次按名称字母顺序排序
+    return a.name.localeCompare(b.name);
+  });
 
   return result;
 });
 
-// 分页结果
-const paginatedLogs = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  return filteredLogs.value.slice(startIndex, startIndex + pageSize.value);
-});
-
-// 总项目数和总页数
-const totalItems = computed(() => filteredLogs.value.length);
+// 分页计算
+const totalItems = computed(() => filteredEndpoints.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 
 // 分页导航
@@ -414,33 +436,44 @@ const nextPage = () => {
   }
 };
 
-// 日志操作样式
-const logActionClass = (action) => {
+// 状态样式
+const statusClass = (status) => {
   if (isDarkMode.value) {
-    const darkActionMap = {
-      'ALLOW': 'bg-green-900 text-green-300',
-      'DENY': 'bg-red-900 text-red-300',
-      'DROP': 'bg-orange-900 text-orange-300',
+    const darkStatusMap = {
+      'online': 'bg-green-900 text-green-300',
+      'offline': 'bg-gray-700 text-gray-300',
+      'warning': 'bg-yellow-900 text-yellow-300',
+      'critical': 'bg-red-900 text-red-300',
     };
-    return darkActionMap[action] || 'bg-gray-700 text-gray-300';
+    return darkStatusMap[status] || 'bg-gray-700 text-gray-300';
   } else {
-    const lightActionMap = {
-      'ALLOW': 'bg-green-100 text-green-800',
-      'DENY': 'bg-red-100 text-red-800',
-      'DROP': 'bg-orange-100 text-orange-800',
+    const lightStatusMap = {
+      'online': 'bg-green-100 text-green-800',
+      'offline': 'bg-gray-100 text-gray-800',
+      'warning': 'bg-yellow-100 text-yellow-800',
+      'critical': 'bg-red-100 text-red-800',
     };
-    return lightActionMap[action] || 'bg-gray-100 text-gray-800';
+    return lightStatusMap[status] || 'bg-gray-100 text-gray-800';
   }
 };
 
-// 日志操作文本
-const logActionText = (action) => {
-  const actionMap = {
-    'ALLOW': '已允许',
-    'DENY': '已拒绝',
-    'DROP': '已丢弃',
+// 状态文本
+const statusText = (status) => {
+  const statusMap = {
+    'online': '在线',
+    'offline': '离线',
+    'warning': '警告',
+    'critical': '危险',
   };
-  return actionMap[action] || action;
+  return statusMap[status] || status;
+};
+
+// 获取操作系统图标
+const getOsIcon = (os) => {
+  if (os.includes('Windows')) return 'mdi:microsoft-windows';
+  if (os.includes('Linux')) return 'mdi:linux';
+  if (os.includes('macOS')) return 'mdi:apple';
+  return 'mdi:laptop';
 };
 
 // 格式化日期
@@ -458,7 +491,7 @@ const formatDate = (timestamp, detailed = false) => {
     });
   }
 
-  // 简化显示，今天的日志只显示时间，非今天的显示日期
+  // 简化显示，今天的只显示时间，非今天的显示日期
   const today = new Date();
   if (date.toDateString() === today.toDateString()) {
     return date.toLocaleTimeString('zh-CN', {
@@ -476,23 +509,41 @@ const formatDate = (timestamp, detailed = false) => {
   }
 };
 
-// 查看日志详情
-const viewLogDetails = (log) => {
-  selectedLog.value = log;
-  showLogModal.value = true;
+// 查看终端详情
+const viewEndpointDetails = (endpoint) => {
+  selectedEndpoint.value = endpoint;
+  showEndpointModal.value = true;
 };
 
-// 关闭日志详情模态框
-const closeLogModal = () => {
-  showLogModal.value = false;
+// 关闭终端详情模态框
+const closeEndpointModal = () => {
+  showEndpointModal.value = false;
 };
 
-// 导出日志
-const exportLogs = () => {
-  const dataStr = JSON.stringify(filteredLogs.value, null, 2);
+// 隔离终端
+const isolateEndpoint = (endpoint) => {
+  // 实际应用中这里会调用API隔离终端
+  alert(`隔离终端: ${endpoint.name}`);
+};
+
+// 扫描终端
+const scanEndpoint = (endpoint) => {
+  // 实际应用中这里会调用API扫描终端
+  alert(`扫描终端: ${endpoint.name}`);
+};
+
+// 全网扫描
+const scanAllEndpoints = () => {
+  // 实际应用中这里会调用API进行全网扫描
+  alert('开始全网扫描');
+};
+
+// 导出终端列表
+const exportEndpoints = () => {
+  const dataStr = JSON.stringify(filteredEndpoints.value, null, 2);
   const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
 
-  const exportName = `firewall-logs-${new Date().toISOString().split('T')[0]}.json`;
+  const exportName = `edr-endpoints-${new Date().toISOString().split('T')[0]}.json`;
 
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);
@@ -500,66 +551,63 @@ const exportLogs = () => {
   linkElement.click();
 };
 
-// 刷新日志
-const refreshLogs = async () => {
+// 刷新终端列表
+const refreshEndpoints = async () => {
   loading.value = true;
   try {
     // 模拟API调用延迟
     await new Promise(resolve => setTimeout(resolve, 800));
 
     // 重新加载数据
-    await loadLogs();
+    await loadEndpoints();
   } finally {
     loading.value = false;
   }
 };
 
-// 加载日志数据
-const loadLogs = async () => {
+// 加载终端数据
+const loadEndpoints = async () => {
   try {
     // 模拟从API获取数据
-    // 在实际应用中，这里应该是一个API调用
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // 生成模拟日志数据
-    const mockLogs = [];
-    const actions = ['ALLOW', 'DENY', 'DROP'];
-    const protocols = ['TCP', 'UDP', 'ICMP'];
-    const interfaces = ['eth0', 'eth1', 'wan0'];
-    const ruleNames = ['允许SSH访问', '允许Web访问', '阻止远程端口扫描', '拒绝特定IP', '允许DNS请求'];
+    // 生成模拟终端数据
+    const mockEndpoints = [];
+    const statuses = ['online', 'offline', 'warning', 'critical'];
+    const osList = ['Windows 10', 'Windows 11', 'macOS 13.1', 'Ubuntu 22.04', 'CentOS 8'];
+    const agentVersions = ['1.5.2', '1.5.1', '1.4.9', '1.6.0-beta'];
+    const groups = ['研发部门', '市场部门', '财务部门', '人力资源部', '管理层'];
 
-    // 生成过去30天内的随机日志
+    // 生成终端数据
     const now = new Date();
-    for (let i = 0; i < 50; i++) {
-      const randomDate = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-      const action = actions[Math.floor(Math.random() * actions.length)];
-      const protocol = protocols[Math.floor(Math.random() * protocols.length)];
-      const ruleIndex = Math.floor(Math.random() * ruleNames.length);
+    for (let i = 0; i < 15; i++) {
+      const os = osList[Math.floor(Math.random() * osList.length)];
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      const randomDate = new Date(now.getTime() - Math.random() * 3 * 24 * 60 * 60 * 1000);
 
-      mockLogs.push({
-        id: `log-${i + 1}`,
-        timestamp: randomDate.toISOString(),
-        action: action,
-        sourceIP: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-        sourcePort: Math.floor(Math.random() * 65535),
-        destinationIP: `10.0.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-        port: Math.floor(Math.random() * 65535),
-        protocol: protocol,
-        interface: interfaces[Math.floor(Math.random() * interfaces.length)],
-        ruleName: ruleNames[ruleIndex],
-        ruleId: `rule-${ruleIndex + 1}`,
-        packet: protocol === 'TCP' ?
-            `Flags [S], seq 1000:1040, win 64240, options [mss 1460], length 40` :
-            (protocol === 'UDP' ? `length 56` : `type 8, code 0`),
-        message: action === 'ALLOW' ?
-            '连接已建立' :
-            (action === 'DENY' ? '连接被拒绝' : '数据包已丢弃')
+      mockEndpoints.push({
+        id: `endpoint-${i + 1}`,
+        name: `ENDPOINT-${String(i + 1).padStart(3, '0')}`,
+        ip: `192.168.1.${10 + i}`,
+        mac: `00:1B:44:11:3A:${String(i + 10).padStart(2, '0')}`,
+        os: os.split(' ')[0],
+        osVersion: os.split(' ')[1],
+        status: status,
+        lastOnline: randomDate.toISOString(),
+        agentVersion: agentVersions[Math.floor(Math.random() * agentVersions.length)],
+        group: groups[Math.floor(Math.random() * groups.length)],
+        hardware: {
+          cpu: 'Intel Core i7-10700K @ 3.80GHz',
+          memory: '16GB DDR4',
+          disk: 'SSD 512GB',
+          gpu: 'NVIDIA GeForce RTX 3070'
+        }
       });
     }
 
-    logs.value = mockLogs;
+    endpoints.value = mockEndpoints;
   } catch (error) {
-    console.error('获取防火墙日志失败:', error);
+    console.error('获取终端列表失败:', error);
     // 添加错误处理逻辑
   }
 };
@@ -567,7 +615,7 @@ const loadLogs = async () => {
 // 组件挂载时加载数据
 onMounted(async () => {
   try {
-    await loadLogs();
+    await loadEndpoints();
   } finally {
     loading.value = false;
   }

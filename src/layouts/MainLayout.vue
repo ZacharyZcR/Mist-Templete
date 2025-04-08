@@ -74,8 +74,8 @@
           <span class="text-sm" :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'">主题</span>
           <button
               @click="toggleDarkMode"
-              class="p-2 rounded-full transition-all duration-300 transform hover:scale-110"
-              :class="isDarkMode ? 'bg-gray-700 text-yellow-300' : 'bg-gray-100 text-gray-700'"
+              class="p-2 rounded-full ml-auto transition-colors"
+              :class="isDarkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
           >
             <Icon :icon="isDarkMode ? 'mdi:white-balance-sunny' : 'mdi:moon-waning-crescent'" class="h-5 w-5" />
           </button>
@@ -186,21 +186,19 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, provide } from 'vue';
 import { useRoute } from 'vue-router';
+import { useStore } from 'vuex'; // 获取 Vuex Store
 import { Icon } from '@iconify/vue';
 import { sidebarConfig } from '../config/sidebarConfig.js';
 
 // 获取当前路由信息
+const store = useStore(); // 创建 store 实例
 const route = useRoute();
 
 // 提供侧边栏配置项给模板使用
 const sidebarItems = ref(sidebarConfig);
 
-// 从localStorage中获取暗黑模式状态，如果没有则默认检查系统偏好
-const isDarkMode = ref(
-    localStorage.getItem('darkMode') === 'true' ||
-    (localStorage.getItem('darkMode') === null &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-);
+// 从Vuex中获取暗黑模式状态
+const isDarkMode = computed(() => store.state.isDarkMode);
 
 // 提供给子组件使用的暗黑模式状态
 provide('isDarkMode', isDarkMode);
@@ -255,10 +253,9 @@ onBeforeUnmount(() => {
   window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', () => {});
 });
 
-// 切换暗黑模式 - 简化为只更新响应式状态
+// 切换暗黑模式
 const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value;
-  // watch会自动处理DOM更新和localStorage保存
+  store.dispatch('toggleDarkMode'); // 触发 Vuex 的动作
 };
 
 // 切换侧边栏（移动设备）
@@ -295,43 +292,3 @@ const logout = () => {
 };
 </script>
 
-<style scoped>
-/* 路由过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* 页面过渡动画 */
-.page-enter-active,
-.page-leave-active {
-  transition: all 0.3s ease-out;
-}
-
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
-/* 下拉菜单动画 */
-@keyframes dropdown {
-  0% {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-</style>

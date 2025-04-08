@@ -162,7 +162,7 @@
                   <input type="checkbox" :checked="rule.enabled" class="sr-only peer" @change="toggleRuleStatus(rule)">
                   <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"
                        :class="isDarkMode
-                           ? 'peer-checked:bg-blue-600 dark:bg-gray-700 dark:peer-checked:bg-blue-600'
+                           ? 'peer-checked:bg-blue-600 bg-gray-700 peer-checked:bg-blue-600'
                            : 'peer-checked:bg-blue-600'"></div>
                 </label>
               </div>
@@ -170,11 +170,11 @@
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
               <div class="flex justify-end space-x-2">
                 <button @click="openEditRuleModal(rule)"
-                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                        :class="isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">
                   <Icon icon="mdi:pencil" class="h-5 w-5" />
                 </button>
                 <button @click="confirmDeleteRule(rule)"
-                        class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                        :class="isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-800'">
                   <Icon icon="mdi:delete" class="h-5 w-5" />
                 </button>
               </div>
@@ -208,9 +208,10 @@
     <!-- 创建/编辑规则的模态框 -->
     <div v-if="showRuleModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="closeRuleModal">
       <div class="fixed inset-0 bg-black opacity-50"></div>
-      <div class="relative bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 md:mx-auto"
+      <div class="relative p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 md:mx-auto"
            :class="isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'">
-        <button @click="closeRuleModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <button @click="closeRuleModal"
+                :class="isDarkMode ? 'absolute top-4 right-4 text-gray-400 hover:text-gray-300' : 'absolute top-4 right-4 text-gray-400 hover:text-gray-600'">
           <Icon icon="mdi:close" class="h-6 w-6" />
         </button>
 
@@ -379,8 +380,8 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onMounted } from 'vue';
-import { Icon } from '@iconify/vue';
+import {ref, computed, inject, onMounted} from 'vue';
+import {Icon} from '@iconify/vue';
 
 // 获取全局暗黑模式状态
 const isDarkMode = inject('isDarkMode', ref(false));
@@ -489,7 +490,7 @@ const openCreateRuleModal = () => {
 // 打开编辑规则模态框
 const openEditRuleModal = (rule) => {
   isEditing.value = true;
-  ruleForm.value = { ...rule };
+  ruleForm.value = {...rule};
   showRuleModal.value = true;
 };
 
@@ -504,7 +505,7 @@ const saveRule = () => {
     // 更新规则
     const index = rules.value.findIndex(r => r.id === ruleForm.value.id);
     if (index !== -1) {
-      rules.value[index] = { ...ruleForm.value };
+      rules.value[index] = {...ruleForm.value};
     }
   } else {
     // 创建新规则
